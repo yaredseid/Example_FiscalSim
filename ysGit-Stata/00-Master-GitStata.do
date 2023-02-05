@@ -1,6 +1,6 @@
 //  Program:    00-Master-GitStata.do
 **#  Task:      Runs Git codes for the project from Stata dofile 
-//  Project:    Git for some of Kenya Fiscal Microsim project 
+//  Project:    Git Kenya Fiscal Microsim project 
 //  Author:     Yared Seid - 2023Feb03
 
 
@@ -51,9 +51,9 @@ cd ../
 ! git commit -m "Date stamp from Stata [`dateStamp']"
 
 ! git push 
+cd "`currDir'Data"
 *===============================================================================
 
-cd "`currDir'Data"
 exit 
 
 
