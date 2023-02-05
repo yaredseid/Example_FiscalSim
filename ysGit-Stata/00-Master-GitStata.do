@@ -25,7 +25,7 @@ local repoName "Assessments_dofile2text"
 local dateStamp: display %tdCCYY-NN-DD date(c(current_date), "DMY")
 
 
-/*
+
 *===============================================================================
 **# Basic Git Setup  -- needs to be run only once 
 *===============================================================================
@@ -38,7 +38,7 @@ local dateStamp: display %tdCCYY-NN-DD date(c(current_date), "DMY")
 
 * Yared's default branch name: ysMain
 ! git config --global init.defaultBranch ysMain
-*/
+
 
 *===============================================================================
 **# Running Git codes -- add, commit, push, pull, etc   
@@ -52,6 +52,8 @@ cd ../
 *! git pull
 ! git add -A 					// Add all new files  
 ! git commit -m "[Date `dateStamp']: "
+
+! git remote add ys_Kenya_Fiscalsim "https://github.com/yaredseid/Assessments_dofile2text"
 
 ! git push 
 cd "`currDir'Data"
