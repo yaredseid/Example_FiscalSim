@@ -50,7 +50,7 @@ cd ../
 ! git add -A 					// Add all new files  
 ! git commit -m "Date stamp from Stata [`dateStamp']"
 
-! git push 
+! git push // `"https://github.com/yaredseid/`repoName'.git"'
 *===============================================================================
 
 cd "`currDir'Data"
