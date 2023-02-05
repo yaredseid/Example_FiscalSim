@@ -1,0 +1,11 @@
+Kenya PIT Incomes 
+
+1. List the pit incomes in the survey 
+
+2. Avoid double counting, e.g., hh-levlel income reported in one module may also include ind-level income reported in another module. Check the difference between entr_inc_ind vs entr_inc_hh 
+
+3. Make sure to make all income reported at individual level; for instance, if income is reported at hh-level, find a way to make it per capita income level...write adofile? 
+
+4. Deal with missing income first...write adofile?
+
+5. See how prior asessments deal with pit income --> how they define it and dealt with points #1-4

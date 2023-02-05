@@ -20,6 +20,8 @@
 	
 local pathGit	"C:\Users\wb484182\OneDrive - WBG\1ys_EPL\1Projects\Kenya-2022FY-FiscalMicroSim\Assessments_dofile2text\ysGit-Stata"
 
+local repoName "Assessments_dofile2text"
+
 local dateStamp: display %tdCCYY-NN-DD date(c(current_date), "DMY")
 
 
@@ -44,9 +46,11 @@ local dateStamp: display %tdCCYY-NN-DD date(c(current_date), "DMY")
 cd "`pathGit'"
 cd ../
 
-! .gitignore ysGit-Stata/				// ignoring my ysGit-Stata folder 
-ya
-! git add -A 			// Add all ne files  
+*! .gitignore ysGit-Stata/		// ignoring my ysGit-Stata folder 
+! git add -A 					// Add all new files  
+! git commit -m "Date stamp from Stata [`dateStamp']"
+
+! git push 
 *===============================================================================
 
 cd "`currDir'Data"
