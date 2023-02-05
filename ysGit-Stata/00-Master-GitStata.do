@@ -46,7 +46,9 @@ local dateStamp: display %tdCCYY-NN-DD date(c(current_date), "DMY")
 cd "`pathGit'"
 cd ../
 
-*! .gitignore ysGit-Stata/		// ignoring my ysGit-Stata folder 
+! .gitignore ysGit-Stata/		// ignoring my ysGit-Stata folder 
+
+*! git pull
 ! git add -A 					// Add all new files  
 ! git commit -m "[Date `dateStamp']: "
 
