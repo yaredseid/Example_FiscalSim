@@ -1,0 +1,30 @@
+                                                       ___  ____  ____  ____  ____(R)
+                                                      /__    /   ____/   /   ____/   
+                                                     ___/   /   /___/   /   /___/    
+                                                       Statistics/Data analysis      
+      
+      
+      *! ys_upper_outliers v1.0.0, Yared Seid, 15Jan2023
+      cap prog drop ys_upper_outliers
+      program ys_upper_outliers, rclass 
+              version 17
+              
+              syntax varlist(min=1 numeric) 
+              
+      *******************************************************************************
+      > *
+      /* Capping upper outliers to MEAN+3SD */
+      foreach z of var `varlist' {
+              /* Dealing with outliers: setting the max value of the income variable 
+      > at (MEAN + 3*SD) */
+              qui sum `z' 
+              tempvar `z'_max_outlier
+              gen ``z'_max_outlier' = `r(mean)' + 3*`r(sd)'                   // save
+      >  MEAN+3SD in a tempvar 
+              replace `z' = ``z'_max_outlier' if `z'>``z'_max_outlier' & !missing(`z'
+      > )     // setting an income ceiling of MEAN+3SD        
+      }
+      *******************************************************************************
+      > *
+      end
+      

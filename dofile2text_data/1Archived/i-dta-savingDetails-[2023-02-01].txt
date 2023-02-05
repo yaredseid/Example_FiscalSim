@@ -1,0 +1,37 @@
+                                                       ___  ____  ____  ____  ____(R)
+                                                      /__    /   ____/   /   ____/   
+                                                     ___/   /   /___/   /   /___/    
+                                                       Statistics/Data analysis      
+      
+      **************** Begin data details *******************************************
+      > *
+      /* Assigning yes or no value lable to dummy variables */
+      label define ys_yesno 1 "Yes" 0 "No", modify 
+      
+      foreach z of local yesnoVars {
+              label val `z' ys_yesno
+      }
+      *
+      
+      /* dta details */
+      local author            "Yared Seid"
+      
+      quietly compress
+      notes:                  "[`dta_name'.do] [${surveyName}: `dta_note'] [`author' 
+      > ${dataDateStamp}]"
+      label data              "${surveyName}: `dta_note'"
+      
+              /* Archiving data signatures */ 
+              if ${ys_archives} ==1 {  // if archives ==1, it puts date stamp 
+      datasignature set, reset saving("${dataDataSignatures}\\1Archived\\`dta_name'-[
+      > ${dataDateStamp}]", replace)
+              }
+              /* This part turns the archiving OFF, so it doesn't archive  */
+              else if ${ys_archives} !=1 {    // if archive !=1, it DOES NOT put a da
+      > te stamp on log file
+      datasignature set, reset saving("${dataDataSignatures}\\`dta_name'", replace)
+              }
+      
+      save "${DataCleaningPath}\\`dta_name'", replace
+      
+      **************** End data details *********************************************

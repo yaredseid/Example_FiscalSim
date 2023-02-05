@@ -1,0 +1,22 @@
+                                                       ___  ____  ____  ____  ____(R)
+                                                      /__    /   ____/   /   ____/   
+                                                     ___/   /   /___/   /   /___/    
+                                                       Statistics/Data analysis      
+      
+      use "${simulationData}\01_${countryName}_${simulationName}_${dem_inc_SY}.dta", 
+      > clear
+      
+      
+      * PLACEHOLDER!! TO BE UPDATED LATER
+      
+      foreach var in $indirect_subsidies {
+          cap drop `var'
+              gen `var' = 0
+      }
+      
+      keep hhID memberID ${indirect_subsidies} 
+      mvencode ${indirect_subsidies}, mv(0) override 
+      
+      isid hhID memberID
+      save "${simulationData}\10_${countryName}_${simulationName}_${indir_subcidy_PY}
+      > .dta", replace

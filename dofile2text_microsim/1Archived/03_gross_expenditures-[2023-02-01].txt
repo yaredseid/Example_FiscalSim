@@ -1,0 +1,61 @@
+                                                       ___  ____  ____  ____  ____(R)
+                                                      /__    /   ____/   /   ____/   
+                                                     ___/   /   /___/   /   /___/    
+                                                       Statistics/Data analysis      
+      
+      * VAT indirect effect:
+      import excel using "$xls_tool", sheet(IO) first clear 
+      drop sector_name
+      
+      isid sector
+      mvencode VAT_rate_SY VAT_exempt_SY sect_*, mv(0) override // make sure that non
+      > e of the coefficient is missing
+      gen double dp = - VAT_rate_SY
+      gen fixed = 1 - VAT_exempt_SY // all except exempted sector
+              assert dp == 0 if fixed == 0
+      
+      costpush sect_*, fixed(fixed) price(dp) genptot(VAT_tot_eff_SY) genpind(VAT_ind
+      > _eff_SY) fix
+      
+      keep sector VAT_ind_eff_SY
+      isid sector
+      tempfile ind_effect_SY
+      save `ind_effect_SY', replace
+      
+      * Import rates (for direct effect)
+      import excel using "$xls_tool", sheet(VAT) first clear 
+      replace VAT_rate_SY = - VAT_rate_SY
+      keep exp_type sector VAT_rate_SY
+      isid exp_type
+      tempfile rates_SY
+      save `rates_SY', replace
+      
+      
+      *EXPENDITURES
+      use "${preSimulationData}\\02_${countryName}_${simulationName}_${cleanedSurveyD
+      > ata_exp}.dta", clear
+      
+      gen int exp_form = 2 - place_purchase
+      rename exp_value exp_gross_SY
+      /*
+      gen double total_exp = 0
+      foreach var in $exp_list {
+          replace `var' = `var' / hhsize * hh_size // we adjust all expenditure varia
+      > ble to match the actuall hh size (rather than reported)
+              replace total_exp = total_exp + `var'
+              
+      }
+      */
+      
+      
+      
+      merge m:1 exp_type using `rates_SY', nogen assert(match)
+      merge m:1 sector using `ind_effect_SY', nogen assert(match using) keep(match)
+      
+      gen double exp_net_SY = exp_gross_SY  / (1 - exp_form * VAT_rate_SY) / (1 - VAT
+      > _ind_eff_SY)
+      
+      isid hh_id exp_type exp_form
+      keep hh_id exp_type exp_form exp_net_SY exp_gross_SY
+      save "${simulationData}\04_${countryName}_${simulationName}_${exp_SY}.dta", rep
+      > lace  

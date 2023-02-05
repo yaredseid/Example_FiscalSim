@@ -1,0 +1,98 @@
+                                                       ___  ____  ____  ____  ____(R)
+                                                      /__    /   ____/   /   ____/   
+                                                     ___/   /   /___/   /   /___/    
+                                                       Statistics/Data analysis      
+      
+      //  Program:    99-02-dataPrep-Kenya_FiscalMicrosim_hhSurvey_cleanedData_exp.do
+      > .do
+      //  Task:       merging all the necessary cleaned expenditure data to be used i
+      > n the Microsim
+      //  Project:    Kenya Fical MicroSim
+      //  Author:     Yared Seid - 2023Jan31
+      
+      
+      // # 1
+      
+      // 1.1. Merging with (food and non-food) expenditure data
+      use "${DataCleaningPath}\05-01-dataPrep-expVars-foodAndNonfood", clear
+      
+      
+      // 1.2. Merging consumption aggregates 
+      merge m:1 hhID using "${DataCleaningPath}\05-02-dataPrep-expVars-consumptionAgg
+      > "
+      tab _merge 
+      drop _merge 
+      
+      
+      // #2
+      // # 2.1 Saving the data
+      order  county clid clusterID hhID  exp_category exp_type exp_value place_purcha
+      > se data_multiple_exp
+      sort  hhID exp_category exp_type
+      
+      
+      *==============================================================================
+      > =
+              * NO NEED TO MODIFY THE DOFILE AFTER THIS POINT FOR ANY EPL PROJECT
+      *==============================================================================
+      > =
+      
+      * saving details 
+      local dta_name          "99-02-dataPrep-${cleanedSurveyData_exp}"
+      local dta_note          "HH survey data cleaned for ${countryName} ${simulation
+      > Name} assessments (Source: ${surveyName})"
+      
+      include "${DataCleaningPath}\i-dta-savingDetails.do"    // saving the data with
+      >  additional info on notes, labels, etc
+      **************************
+      
+      
+      *==============================================================================
+      > =
+       *2.2. Saving data in the "Microsim/01.Data" folder to be used in the actual mi
+      > crosim assessments later  
+      *==============================================================================
+      > =
+              /* For the name of the final-data used in the ${simulationName}, howeve
+      > r, I drop the prefix "99-dataPrep-01-" from the above `dta_name' macro which 
+      > is the first 16 characters */
+      local dta_name  = substr("`dta_name'", 16, .)           
+      
+      
+      **************** Begin data details *******************************************
+      > *
+      local author            "Yared Seid"
+      
+      quietly compress
+      notes:          "[`dta_name'.do] [${surveyName}: `dta_note'] [`author' ${dataDa
+      > teStamp}]"
+      label data      " "     // not to carry over the data label to miscosim data, s
+      > ince we don't label data created in the microsim tool
+      
+      
+              /* Archiving data signatures */ 
+              if ${ys_archives} ==1 {  // if archives ==1, it puts date stamp 
+      datasignature set, reset saving("${dataDataSignatures}\\1Archived\\`dta_name'-[
+      > ${dataDateStamp}]", replace)
+              }
+              /* This part turns the archiving OFF, so it doesn't archive  */
+              else if ${ys_archives} !=1 {    // if archive !=1, it DOES NOT put a da
+      > te stamp on log file
+      datasignature set, reset saving("${dataDataSignatures}\\`dta_name'", replace)
+              }
+      
+      cd "${DataCleaningPath}"                        // Setting relative path to use
+      >  it in the code right below 
+      save "..\\${simulationName}\\01.Data\\01.PreSimulationData\\02_`dta_name'", rep
+      > lace   // Saving the data in the "${simulationName}\\01.Data\\01.PreSimulatio
+      > nData" folder
+       
+      **************** End data details *********************************************
+      > *
+      
+      *==============================================================================
+      > =
+      *==============================================================================
+      > =
+      
+      

@@ -1,0 +1,42 @@
+                                                       ___  ____  ____  ____  ____(R)
+                                                      /__    /   ____/   /   ____/   
+                                                     ___/   /   /___/   /   /___/    
+                                                       Statistics/Data analysis      
+      
+      * Nowcasting of weights (adjust for population growth)
+      use "${simulationData}\02_${countryName}_${simulationName}_${dem_SY}.dta" , cle
+      > ar
+      
+      * Simple way to adjust for population growth
+      foreach var in ind_weight hh_weight {
+              replace `var' = `var' * ${population_uprating}
+      }
+      
+      isid hhID memberID
+      
+      des, full 
+      sum 
+      save "${simulationData}\05_${countryName}_${simulationName}_${dem_PY}.dta", rep
+      > lace
+      
+      
+      * Nowcasting of market incomes
+      des, full 
+      sum 
+      use "${simulationData}\03_${countryName}_${simulationName}_${mkt_inc_SY}.dta", 
+      > clear
+      
+      * Incomes may be uprated using different factors
+      foreach var in $market_income {
+              replace `var' = `var' * ${wage_uprating}
+      }
+      
+      /*
+      foreach var in cap_income agri_inc priv_trans {
+              replace `var' = `var' * ${other_income_uprating}
+      }
+      */
+      
+      des, full 
+      sum 
+      save "${simulationData}\06_${countryName}_${simulationName}_${mkt_inc_PY}.dta",

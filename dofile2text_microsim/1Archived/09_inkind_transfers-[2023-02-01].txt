@@ -1,0 +1,76 @@
+                                                       ___  ____  ____  ____  ____(R)
+                                                      /__    /   ____/   /   ____/   
+                                                     ___/   /   /___/   /   /___/    
+                                                       Statistics/Data analysis      
+      
+      use "${simulationData}\01_${countryName}_${simulationName}_${dem_inc_SY}.dta", 
+      > clear
+      
+      /*
+      * PLACEHOLDER!! TO BE UPDATED LATER
+      
+      foreach var in $health $education {
+          cap drop `var'
+              gen `var' = 0
+      }
+      
+      
+      keep hhID memberID ${health} ${education} 
+      mvencode   ${health} ${education}  , mv(0) override 
+      
+      isid hhID memberID
+      save "${data}\generatedData\Example_FiscalSim_inkind_transefrs_data.dta", repla
+      > ce
+      */
+      
+      
+      use "${simulationData}\04_${countryName}_${simulationName}_${exp_SY}.dta", clea
+      > r
+      decode exp_type, generate(exp_name)
+      
+      keep if exp_type == 81 | exp_type == 82 // expenditures for education
+      
+      keep hhID  exp_type exp_net_SY
+      reshape wide exp_net_SY, i(hhID) j(exp_type)
+      merge 1:m hhID using "${simulationData}\01_${countryName}_${simulationName}_${d
+      > em_inc_SY}.dta", nogen assert(match using) keepusing( memberID ind_weight stu
+      > dy med_ins hospital_days)
+      mvencode   exp_net_SY*  , mv(0) override 
+      
+      *education status 
+      gen stud_prim = (study == 1)
+      gen stud_sec = (study == 2)
+      gen stud_post_sec = (study == 3) & exp_net_SY81 == 0 // we do not have question
+      >  for paid eductions, so we have to rely on the expenditure info. 
+      gen stud_tert = inrange(study,4,5) & exp_net_SY82 == 0 // we assume that if hh 
+      > has education exapnditure, than noone in the hh is on budget funding
+      
+      foreach type in prim sec post_sec tert {
+              
+              su stud_`type' [aw = ind_weight]
+              global stud_tot_`type' = r(sum)
+              
+              gen double educ_`type' = stud_`type' / ${stud_tot_`type'} * ${educ_exp_
+      > `type'} * ${scale_factor}
+      }
+      
+      * HEALTH (combined approach)
+      gen med_out = med_ins == 1 // indicator of having insurance
+      gen med_in = hospital_days if (med_ins == 1 ) // number of days in hospital
+      
+      
+      foreach type in in out {
+              
+              su med_`type' [aw = ind_weight]
+              global med_tot_`type' = r(sum)
+              
+              gen double health_`type' = med_`type' / ${med_tot_`type'} * ${health_ex
+      > p_`type'} * ${scale_factor}
+      }
+      
+      keep hhID memberID ${health} ${education} 
+      mvencode ${health} ${education}  , mv(0) override 
+      
+      isid hhID memberID
+      save "${simulationData}\11_${countryName}_${simulationName}_${inkind_trans_PY}.
+      > dta", replace

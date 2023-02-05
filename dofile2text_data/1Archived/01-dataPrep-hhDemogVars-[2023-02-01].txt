@@ -1,0 +1,100 @@
+                                                       ___  ____  ____  ____  ____(R)
+                                                      /__    /   ____/   /   ____/   
+                                                     ___/   /   /___/   /   /___/    
+                                                       Statistics/Data analysis      
+      
+      //  Program    01-dataPrep-hhDemogVars
+      //  Task:       cleans household demographic variables using the Kenyan survey 
+      > data (2015/16 KIHBS)
+      //  Project:    Kenya Fical MicroSim
+      //  Author:     Yared Seid - 2023Jan11
+      
+      
+      // #1
+      // Loading the data
+      use "${dataSources}\Kenya_2015_16_KIHBS\HH_Information.dta", clear
+      
+      
+      // #2
+      // Generating vars
+      
+      * interview date
+      rename iday date_interview
+      format date_interview %td
+      label var date_interview "Date on which interview was conducted"
+      
+      * IDs
+      codebook county clid hhid 
+      
+      qui tostring clid,      gen(clusterID) format(%04.0f)                   // clus
+      > ter id
+      qui tostring hhid,      gen(hhid_STR) format(%02.0f)                    // houd
+      > ehold id, within county and cluster
+      
+      label var clusterID "Cluster ID"
+      
+      gen hhID = clusterID + hhid_STR
+      label var hhID "Household ID"
+      isid hhID
+      
+      * hh size 
+      rename hhsize hh_size
+      label var hh_size "Household size"
+      
+      * weights
+      rename weight hh_weight
+      label var hh_weight "Household weight"
+      
+      gen ind_weight = hh_weight * hh_size 
+      label var ind_weight "Individual weight"
+      
+      * geography/strata
+      clonevar strata1 = strat
+      label var strata1 "Strata1: Sampling strata"
+      
+      clonevar strata2 = resid
+      label var strata2 "Strata2: 1 - Rural, 2 - Urban" 
+      label define strata2 1 "Rural" 2 "Urban"
+      label val strata2 strata2 
+      
+      clonevar strata3 = eatype
+      label var strata3 "Strata3: 1 - Rural, 2 - Urban, 3 - Peri-Urban" 
+      label define strata3 1 "Rural" 2 "Urban" 3 "Peri-Urban"
+      label val strata3 strata3 
+      
+      
+      // #3
+      // Saving the data      
+      * keeping slected vartiables 
+      local keepVars county clid clusterID hhID hh_weight ind_weight strata1 strata2 
+      > strata3 date_interview hh_size
+      
+      /* To assign Yes/No value lable to dummy variables */
+      local yesnoVars          
+                      
+      order `keepVars'
+      keep `keepVars'
+      
+      sort hhID
+      codebook hhID
+      
+      
+      * saving details 
+      local dta_name          01-dataPrep-hhDemogVars
+      local dta_note          "Household demographic variables"
+      
+      
+      include "${DataCleaningPath}\i-dta-savingDetails.do"    // saving the data with
+      >  additional info on notes, labels, etc
+      **************************
+      
+      
+      *******************************************************************************
+      > *
+      // #4
+      // Post-data-saving checking 
+      
+      
+              
+      *******************************************************************************
+      > *

@@ -1,0 +1,51 @@
+                                                       ___  ____  ____  ____  ____(R)
+                                                      /__    /   ____/   /   ____/   
+                                                     ___/   /   /___/   /   /___/    
+                                                       Statistics/Data analysis      
+      
+      
+      *! ys_annualizing_values v1.0.0, Yared Seid, 15Jan2023
+      cap prog drop ys_annualizing_values
+      program ys_annualizing_values, rclass 
+              version 17
+              
+              syntax varlist(numeric max=1) [if], recall_in_days(numlist max=1)      
+      >  // typical recall days are 1, 7, 30, or 90 
+      
+              
+              marksample touse                                                       
+      >  // to count N for IF and IN conditions
+              qui count if `touse'
+              if `r(N)' == 0 {
+                      error 2000
+              }
+              *
+              
+      /* Annualizing daily, weekly, monthly, quarterly, etc values */
+              qui     replace `varlist' = `varlist' * (365/`recall_in_days')  if `tou
+      > se'
+      
+      end
+      
+      * Have a great day!
+      
+      
+      
+      
+      
+      *******************************************************************************
+      > *
+      /*
+      /* Annualizing values  */
+      *foreach z of var `varlist' {
+              qui replace `z' = `z'*365       if `recall_in_days' ==1  &  `touse'    
+      >               // annualizing daily values   
+              qui replace `z' = `z'*52        if `recall_in_days' ==7  &  `touse'    
+      >               // annualizing weekly values    
+              qui replace `z' = `z'*12        if `recall_in_days' ==30 &  `touse'    
+      >               // annualizing monthly values     
+              qui replace `z' = `z'*4         if `recall_in_days'     ==90 &  `touse'
+      >               // annualizing quarterly values    
+      *}
+      */
+      *******************************************************************************

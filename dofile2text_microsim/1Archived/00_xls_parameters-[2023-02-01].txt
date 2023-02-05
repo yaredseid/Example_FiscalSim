@@ -1,0 +1,94 @@
+                                                       ___  ____  ____  ____  ____(R)
+                                                      /__    /   ____/   /   ____/   
+                                                     ___/   /   /___/   /   /___/    
+                                                       Statistics/Data analysis      
+      
+      *==============================================================================
+      > =
+              * Read parameters from excel and assign them to global macros
+      *==============================================================================
+      > =
+      * 1. Uprating 
+      import excel using "$xls_tool", sheet(uprating)  first clear 
+              destring _all, replace
+              ds 
+              foreach var in `r(varlist)' {   // age uprating = 7 years is added in t
+      > he xls_tool since (PY-SY) = 7 years
+              global `var'_uprating = `var'[1]
+              }
+      /******************************************************************************
+      > */
+      
+      * 2. PIT and Pension rates
+      import excel using "$xls_tool", sheet(PIT_SIC)  first clear //PIT
+              drop if missing(PIT_cutoff) | PIT_cutoff == 0
+              global PIT_brackets = _N
+      
+      
+              /* Save rates/cutoffs in a global macro to automoate dirtax.ado options
+      > , as in rates(${PIT_rate_lists}) tholds(${PIT_cutoff_lists}) */
+              global PIT_cutoff_lists                                                
+      >                                       
+              global PIT_rate_lists                                                  
+      >                                               
+              
+              forvalues i = 1 / $PIT_brackets {
+                      global PIT_cutoff_`i' = PIT_cutoff[`i']*12              // Annu
+      > alizing PIT cutoff  
+                      global PIT_rate_`i' = PIT_rate[`i']*100  // Multiply by 100 to 
+      > use it directly in the dirtax.ado command (eg, 0.15 becomes 15)
+                      
+                      global PIT_cutoff_lists  ${PIT_cutoff_lists} ${PIT_cutoff_`i'} 
+      >  
+                      global PIT_rate_lists  ${PIT_rate_lists} ${PIT_rate_`i'}       
+      >               
+              }
+                              
+              /* Checking if the number of PIT brackets is the same as the number of 
+      > cutoff points and rates */
+                      local count_PIT_cutoff_lists : word count ${PIT_cutoff_lists}  
+      >        
+                      assert `count_PIT_cutoff_lists' ==  ${PIT_brackets}            
+      >                        
+                      
+                      local count_PIT_rate_lists : word count ${PIT_rate_lists}      
+      >               
+                      assert `count_PIT_rate_lists' ==  ${PIT_brackets}       
+                      
+              foreach var in PIT_deduction SIC_rate {
+                      global `var' = `var'[1] 
+              }
+                      global PIT_deduction = ${PIT_deduction}         // PIT deductio
+      > n is already annualized
+                      
+      /******************************************************************************
+      > */
+      
+      * 3. Transfers
+      import excel using "$xls_tool", sheet(transfers)  first clear //PIT
+              ds 
+              foreach var in `r(varlist)' {
+                      global `var' = `var'[1] 
+              }
+      
+              global child_benefit = ${child_benefit}*12                             
+      >                       // Annualizing benefits  
+              global unempl_coverage_increase = ${unempl_coverage_increase}*12       
+      >  // Annualizing enemp't coverage  
+              global GMI_threshold = ${GMI_threshold}*12                             
+      >                       // Annualizing GMI 
+      /******************************************************************************
+      > */
+      
+      * 4. inkind     
+      import excel using "$xls_tool", sheet(inkind)  first clear 
+              destring _all, replace
+              ds 
+              foreach var in `r(varlist)' {
+                      global `var' = `var'[1]
+              }
+              /* These inkind vars are typically reported annualy, so no need to annu
+      > alize them */
+              
+              clear                   // deleting inkind data in Stata
+      /******************************************************************************

@@ -1,0 +1,123 @@
+                                                       ___  ____  ____  ____  ____(R)
+                                                      /__    /   ____/   /   ____/   
+                                                     ___/   /   /___/   /   /___/    
+                                                       Statistics/Data analysis      
+      
+      //  Program:    99-dataPrep-Kenya_FiscalMicroSim_hhSurvey_cleanedData_dem_inc.d
+      > o
+      //  Task:       merging the necessary cleaned demography and income data to be 
+      > used in the Microsim
+      //  Project:    Kenya Fical MicroSim
+      //  Author:     Yared Seid - 2023Jan11
+      
+      
+      // # 1
+      // 1.1. Loading the data with household variables
+      use "${DataCleaningPath}\01-dataPrep-hhDemogVars", clear 
+      
+      
+      // 1.2. Merging with household members info
+      merge 1:m hhID using "${DataCleaningPath}\02-dataPrep-hhMemberDemogVars"
+      tab _merge
+      drop _merge
+      
+      // 1.3. Merging with income info
+      merge m:m hhID using "${DataCleaningPath}\03-dataPrep-incomeVars"
+      tab _merge 
+      drop _merge 
+      
+      // 1.4. Merging with income from transfers and pensions info
+      merge m:m hhID using "${DataCleaningPath}\04-dataPrep-otherIncomes-transfersAnd
+      > Pensions"
+      tab _merge 
+      drop _merge 
+      
+      /*
+      // 1.5.1. Merging with (food and non-food) expenditure data
+      merge m:m hhID using "${DataCleaningPath}\05-01-dataPrep-expVars-foodAndNonfood
+      > "
+      tab _merge 
+      drop _merge 
+      */
+      
+      /*
+      // 1.5.2 Merging consumption aggregates 
+      merge m:m hhID using "${DataCleaningPath}\05-02-dataPrep-expVars-consumptionAgg
+      > "
+      tab _merge 
+      drop _merge 
+      */
+      
+      // #2
+      // # 2.1 Saving the data
+      order date_interview county clid clusterID hhID memberID ///
+                      hh_weight ind_weight strata1 strata2 strata3 ///
+                      hh_size
+      sort  hhID memberID 
+      
+      
+      *==============================================================================
+      > =
+              * NO NEED TO MODIFY THE DOFILE AFTER THIS POINT FOR ANY EPL PROJECT
+      *==============================================================================
+      > =
+      
+      * saving details 
+      local dta_name          "99-01-dataPrep-${cleanedSurveyData_dem_inc}"
+      local dta_note          "HH survey data cleaned for ${countryName} ${simulation
+      > Name} assessments (Source: ${surveyName})"
+      
+      include "${DataCleaningPath}\i-dta-savingDetails.do"    // saving the data with
+      >  additional info on notes, labels, etc
+      **************************
+      
+      
+      *==============================================================================
+      > =
+       *2.2. Saving data in the "Microsim/01.Data" folder to be used in the actual mi
+      > crosim assessments later  
+      *==============================================================================
+      > =
+              /* For the name of the final-data used in the ${simulationName}, howeve
+      > r, I drop the prefix "99-dataPrep-01-" from the above `dta_name' macro which 
+      > is the first 16 characters */
+      local dta_name  = substr("`dta_name'", 16, .)           
+      
+      
+      **************** Begin data details *******************************************
+      > *
+      local author            "Yared Seid"
+      
+      quietly compress
+      notes:          "[`dta_name'.do] [${surveyName}: `dta_note'] [`author' ${dataDa
+      > teStamp}]"
+      label data      " "     // not to carry over the data label to miscosim data, s
+      > ince we don't label data created in the microsim tool
+      
+      
+              /* Archiving data signatures */ 
+              if ${ys_archives} ==1 {  // if archives ==1, it puts date stamp 
+      datasignature set, reset saving("${dataDataSignatures}\\1Archived\\`dta_name'-[
+      > ${dataDateStamp}]", replace)
+              }
+              /* This part turns the archiving OFF, so it doesn't archive  */
+              else if ${ys_archives} !=1 {    // if archive !=1, it DOES NOT put a da
+      > te stamp on log file
+      datasignature set, reset saving("${dataDataSignatures}\\`dta_name'", replace)
+              }
+      
+      cd "${DataCleaningPath}"                        // Setting relative path to use
+      >  it in the code right below 
+      save "..\\${simulationName}\\01.Data\\01.PreSimulationData\\01_`dta_name'", rep
+      > lace   // Saving the data in the "${simulationName}\\01.Data\\01.PreSimulatio
+      > nData" folder
+       
+      **************** End data details *********************************************
+      > *
+      
+      *==============================================================================
+      > =
+      *==============================================================================
+      > =
+      
+      

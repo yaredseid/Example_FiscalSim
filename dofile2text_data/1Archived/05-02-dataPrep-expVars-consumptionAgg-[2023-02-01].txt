@@ -1,0 +1,118 @@
+                                                       ___  ____  ____  ____  ____(R)
+                                                      /__    /   ____/   /   ____/   
+                                                     ___/   /   /___/   /   /___/    
+                                                       Statistics/Data analysis      
+      
+      //  Program:    05-02-dataPrep-expVars-consumptionAgg.do
+      //  Task:       aggreggates household consumption expenditures using Kenyan sur
+      > vey data (2015/16 KIHBS)
+      //  Project:    Kenya Fical MicroSim
+      //  Author:     Yared Seid - 2023Jan21
+      
+      
+      // #1: Food expenditure
+      // Loading the data
+      use "${dataSources}\Kenya_2015_16_KIHBS\Consumption_aggregate.dta", clear
+      
+      
+      // Generating vars
+      
+      * Generating IDs
+      codebook clid hhid 
+      
+      qui tostring clid,      gen(clusterID) format(%04.0f)                   // clus
+      > ter id
+      qui tostring hhid,      gen(hhid_STR) format(%02.0f)                    // houd
+      > ehold id, within a cluster
+      
+      label var clusterID "Cluster ID"
+      
+      gen hhID = clusterID + hhid_STR
+      label var hhID "Household ID"
+      
+      isid hhID 
+      
+      * geography/strata
+      clonevar strata1 = strat
+      label var strata1 "Strata1: Sampling strata"
+      
+      * hh size 
+      rename hhsize hh_size
+      label var hh_size "Household size"
+      
+      * consumption aggreggates and poverty weight 
+      /* The vars below (i.e., consumptions, adult equivalence, poverty lines, etc) a
+      > re already cleaned, I believe, by the Kenyan team. These I kept them as they 
+      > are. */
+      local varsCleanedByKenyanTeam ctry_adq padqnfitems padqeduc padqrent padqegy pa
+      > dqexp padqfdcons pl_abs pl_food pdeflator weight weight_pop weight_adq
+      
+      *******************************************************************************
+      > *
+      /* Final touch of key variables - order matters! First annualize, then cap uppe
+      > r outliers */
+      local monthlyVars1 padqnfitems padqeduc padqrent padqegy padqexp padqfdcons 
+      local monthlyVars2  pl_abs pl_food
+      local finalTouchVars `monthlyVars1' `monthlyVars2'
+      
+      sum `finalTouchVars'
+      foreach z of local finalTouchVars {
+      ys_annualizing_values   `z', recall_in_days(30)         // annualizing monthly 
+      > values 
+      }
+      sum `finalTouchVars'
+      
+              /* Changing the variable labels from "monthly"  to Annual */
+              foreach z of local monthlyVars1 {
+              local ys_lbl_temp_`z': var label `z'
+              local ys_lbl_`z' = "Annual" + substr(`"`ys_lbl_temp_`z''"', 8, .)      
+      >  // Changing the "Monthly" to "Annual" in the label   
+              label var `z' "`ys_lbl_`z''"
+              }
+      *******************************************************************************
+      > *
+      
+       
+      // #3
+      // Saving the data
+      local keepVars county clid clusterID hhID hh_size `varsCleanedByKenyanTeam'
+      
+      /* To assign Yes/No value lable to dummy variables */
+      local yesnoVars 
+              
+      order `keepVars'
+      keep `keepVars'
+      
+      sort  hhID  
+      codebook hhID 
+      
+      * saving details 
+      local dta_name           05-02-dataPrep-expVars-consumptionAgg
+      local dta_note          "Expenditure: consumption aggreggates"
+      
+      include "${DataCleaningPath}\i-dta-savingDetails.do"                    // savi
+      > ng the data with additional info on notes, labels, etc
+      
+      **************************
+      
+      
+      *******************************************************************************
+      > *
+      // #4
+      // Post-data-saving checking 
+      
+      /* Checking for the hh size (we count only those who are present) */
+      merge 1:1 hhID using "${DataCleaningPath}\01-dataPrep-hhDemogVars", keepusing(h
+      > h_size)                       // import hh size 
+      drop _merge 
+      merge 1:m hhID using "${DataCleaningPath}\02-dataPrep-hhMemberDemogVars", keepu
+      > sing(memberID)                // import hh member id
+      drop _merge 
+      
+      bysort hhID: egen double hh_size_test = count(memberID)
+              assert hh_size == hh_size_test // if !mi(ind_weight)            
+      
+      order hhID memberID hh_size hh_size_test
+              
+      *******************************************************************************
+      > *
