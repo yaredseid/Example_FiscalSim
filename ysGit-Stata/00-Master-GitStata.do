@@ -24,36 +24,39 @@ local repoName "Assessments_dofile2text"
 
 local dateStamp: display %tdCCYY-NN-DD date(c(current_date), "DMY")
 
-
-
+cd "`pathGit'"
+cd ../
 *===============================================================================
 **# Basic Git Setup  -- needs to be run only once 
 *===============================================================================
-* Yared's profile 
-! git config --global user.name "Yared Seid"
-! git config --global user.email "yaredseid@gmail.com"
-
-* Yared's choice of editor: notepad++
-! git config --global core.editor "'C:/Program Files/Notepad++/notepad++.exe' -multiInst -notabbar -nosession -noPlugin"
-
-* Yared's default branch name: ysMain
-! git config --global init.defaultBranch ysMain
-
+include "`pathGit'\\i-01-Git-setup.do"
 
 *===============================================================================
 **# Running Git codes -- add, commit, push, pull, etc   
 *===============================================================================
-cd "`pathGit'"
-cd ../
+local git_commit_note "Initial commit after project folders are auto created"
+
+include "`pathGit'\\i-02-Git-addCommitPush.do"
+
+
+
+ya
+
 
 ! .gitignore ysGit-Stata/				// ignoring my ysGit-Stata folder 
 ! .gitignore *.dta 						// ignoring Stata data files  
 
 *! git pull
-! git add -A 					// Add all new files  
-! git commit -m "[Date `dateStamp']: "
+! git add -A 							// Add all new files  
+! git commit -m "[Date `dateStamp']: `git_commit_note'"
+! git push 
 
-! git remote add ys_Kenya_Fiscalsim "https://github.com/yaredseid/Assessments_dofile2text"
+! git remote add ys_`repoName' "https://github.com/yaredseid/`repoName'"
+! git remote show ys_`repoName'
+
+/* To print out the history of my commits, showing where my branch pointers are
+and how my history has diverged */
+*! git log --oneline --decorate --graph --all 
 
 ! git push 
 cd "`currDir'Data"
