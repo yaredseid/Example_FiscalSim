@@ -26,10 +26,12 @@ local dateStamp: display %tdCCYY-NN-DD date(c(current_date), "DMY")
 
 cd "`pathGit'"
 cd ../
+
+/*
 *===============================================================================
 **#1. Basic Git Setup  -- needs to be run only once 
 *===============================================================================
-*include "`pathGit'\\i-01-Git-setup.do"
+include "`pathGit'\\i-01-Git-setup.do"
 
 
 *===============================================================================
@@ -47,13 +49,12 @@ local git_commit_note "Initial commit after project folders are auto created"
 
 ! git remote add ys_`repoName' "https://github.com/yaredseid/`repoName'"
 ! git remote show ys_`repoName'
-
-ya
+*/
 
 *===============================================================================
 **# Running Git codes -- add, commit, and push   
 *===============================================================================
-local git_commit_note " "
+local git_commit_note "Testing Git's auto run from a dofile"
 
 include "`pathGit'\\i-02-Git-addCommitPush.do"
 
