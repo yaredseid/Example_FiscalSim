@@ -27,21 +27,15 @@ local dateStamp: display %tdCCYY-NN-DD date(c(current_date), "DMY")
 cd "`pathGit'"
 cd ../
 *===============================================================================
-**# Basic Git Setup  -- needs to be run only once 
+**#1. Basic Git Setup  -- needs to be run only once 
 *===============================================================================
-include "`pathGit'\\i-01-Git-setup.do"
+*include "`pathGit'\\i-01-Git-setup.do"
+
 
 *===============================================================================
-**# Running Git codes -- add, commit, push, pull, etc   
+**#2. Initial commit after the project folder structures are auto created  -- needs to be run only once 
 *===============================================================================
 local git_commit_note "Initial commit after project folders are auto created"
-
-include "`pathGit'\\i-02-Git-addCommitPush.do"
-
-
-
-ya
-
 
 ! .gitignore ysGit-Stata/				// ignoring my ysGit-Stata folder 
 ! .gitignore *.dta 						// ignoring Stata data files  
@@ -54,14 +48,30 @@ ya
 ! git remote add ys_`repoName' "https://github.com/yaredseid/`repoName'"
 ! git remote show ys_`repoName'
 
+ya
+
+*===============================================================================
+**# Running Git codes -- add, commit, and push   
+*===============================================================================
+local git_commit_note " "
+
+include "`pathGit'\\i-02-Git-addCommitPush.do"
+
+
+
+ya
+
+
 /* To print out the history of my commits, showing where my branch pointers are
 and how my history has diverged */
 *! git log --oneline --decorate --graph --all 
 
+
 ! git push 
-cd "`currDir'Data"
 *===============================================================================
 
+
+cd "`currDir'Data"
 exit 
 
 
